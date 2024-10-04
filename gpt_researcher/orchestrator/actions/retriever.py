@@ -1,4 +1,5 @@
 from typing import List, Type
+import os
 from gpt_researcher.config.config import Config
 
 def get_retriever(retriever):
@@ -83,7 +84,9 @@ def get_retrievers(headers, cfg):
         list: A list of retriever classes to be used for searching.
     """
     # Check headers first for multiple retrievers
-    if headers.get("retrievers"):
+    if os.environ.get("RETRIEVER"):
+        retrievers = os.environ.get("RETRIEVER").split(",")
+    elif headers.get("retrievers"):
         retrievers = headers.get("retrievers").split(",")
     # If not found, check headers for a single retriever
     elif headers.get("retriever"):

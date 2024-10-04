@@ -5,10 +5,10 @@ from gpt_researcher.utils.enum import ReportSource, ReportType, Tone
 
 
 def generate_search_queries_prompt(
-    question: str,
-    parent_query: str,
-    report_type: str,
-    max_iterations: int = 3,
+        question: str,
+        parent_query: str,
+        report_type: str,
+        max_iterations: int = 3,
 ):
     """Generates the search queries prompt for the given question.
     Args:
@@ -21,8 +21,8 @@ def generate_search_queries_prompt(
     """
 
     if (
-        report_type == ReportType.DetailedReport.value
-        or report_type == ReportType.SubtopicReport.value
+            report_type == ReportType.DetailedReport.value
+            or report_type == ReportType.SubtopicReport.value
     ):
         task = f"{parent_query} - {question}"
     else:
@@ -37,12 +37,12 @@ def generate_search_queries_prompt(
 
 
 def generate_report_prompt(
-    question: str,
-    context,
-    report_source: str,
-    report_format="apa",
-    total_words=1000,
-    tone=None,
+        question: str,
+        context,
+        report_source: str,
+        report_format="apa",
+        total_words=1000,
+        tone=None,
 ):
     """Generates the report prompt for the given question and research summary.
     Args: question (str): The question to generate the report prompt for
@@ -90,7 +90,7 @@ Assume that the current date is {date.today()}.
 
 
 def generate_resource_report_prompt(
-    question, context, report_source: str, report_format="apa", tone=None, total_words=1000
+        question, context, report_source: str, report_format="apa", tone=None, total_words=1000
 ):
     """Generates the resource report prompt for the given question and research summary.
 
@@ -128,13 +128,13 @@ def generate_resource_report_prompt(
 
 
 def generate_custom_report_prompt(
-    query_prompt, context, report_source: str, report_format="apa", tone=None, total_words=1000
+        query_prompt, context, report_source: str, report_format="apa", tone=None, total_words=1000
 ):
     return f'"{context}"\n\n{query_prompt}'
 
 
 def generate_outline_report_prompt(
-    question, context, report_source: str, report_format="apa", tone=None,  total_words=1000
+        question, context, report_source: str, report_format="apa", tone=None, total_words=1000
 ):
     """Generates the outline report prompt for the given question and research summary.
     Args: question (str): The question to generate the outline report prompt for
@@ -233,15 +233,15 @@ and research data:
 
 
 def generate_subtopic_report_prompt(
-    current_subtopic,
-    existing_headers: list,
-    relevant_written_contents: list,
-    main_topic: str,
-    context,
-    report_format: str = "apa",
-    max_subsections=5,
-    total_words=800,
-    tone: Tone = Tone.Objective,
+        current_subtopic,
+        existing_headers: list,
+        relevant_written_contents: list,
+        main_topic: str,
+        context,
+        report_format: str = "apa",
+        max_subsections=5,
+        total_words=800,
+        tone: Tone = Tone.Objective,
 ) -> str:
     return f"""
 "Context":
@@ -279,7 +279,7 @@ You must limit the number of subsections to a maximum of {max_subsections}.
 - You MUST include markdown hyperlinks to relevant source URLs wherever referenced in the report, for example:
 
     ### Section Header
-    
+
     This is a sample text. ([url website](url))
 
 - Use H2 for the main subtopic header (##) and H3 for subsections (###).
@@ -305,10 +305,10 @@ Assume the current date is {datetime.now(timezone.utc).strftime('%B %d, %Y')} if
 
 
 def generate_draft_titles_prompt(
-    current_subtopic: str,
-    main_topic: str,
-    context: str,
-    max_subsections: int = 5
+        current_subtopic: str,
+        main_topic: str,
+        context: str,
+        max_subsections: int = 5
 ) -> str:
     return f"""
 "Context":
@@ -350,15 +350,6 @@ Assume that the current date is {datetime.now(timezone.utc).strftime('%B %d, %Y'
 
 
 def generate_report_conclusion(report_content: str) -> str:
-    """
-    Generate a concise conclusion summarizing the main findings and implications of a research report.
-
-    Args:
-        report_content (str): The content of the research report.
-
-    Returns:
-        str: A concise conclusion summarizing the report's main findings and implications.
-    """
     prompt = f"""
     Based on the following research report, please write a concise conclusion that summarizes the main findings and their implications:
 
@@ -369,14 +360,107 @@ def generate_report_conclusion(report_content: str) -> str:
     2. Highlight the most important findings
     3. Discuss any implications or next steps
     4. Be approximately 2-3 paragraphs long
-    
+
     If there is no "## Conclusion" section title written at the end of the report, please add it to the top of your conclusion. 
     You must include hyperlinks with markdown syntax ([url website](url)) related to the sentences wherever necessary.
-    
+
     Write the conclusion:
     """
 
     return prompt
+
+
+def generate_short_report_prompt(
+        question: str,
+        context,
+        report_source: str,
+        report_format="apa",
+        total_words=1000,
+        tone=None,
+):
+    """Generates the report prompt for the given question and research summary.
+    Args: question (str): The question to generate the report prompt for
+            research_summary (str): The research summary to generate the report prompt for
+    Returns: str: The report prompt for the given question and research summary
+    """
+
+    reference_prompt = ""
+    if report_source == ReportSource.Web.value:
+        reference_prompt = f"""
+    You MUST write all used source urls at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each.
+    Every url should be hyperlinked: [url website](url)
+    Additionally, you MUST include hyperlinks to the relevant URLs wherever they are referenced in the report: 
+
+    eg: Author, A. A. (Year, Month Date). Title of web page. Website Name. [url website](url)
+    """
+    else:
+        reference_prompt = f"""
+    You MUST write all used source document names at the end of the report as references, and make sure to not add duplicated sources, but only one reference for each."
+    """
+
+    tone_prompt = f"Write the report in a {tone.value} tone." if tone else ""
+
+    return f"""
+    Information: "{context}"
+    ---
+    Using the above information, answer the following query or task: "{question}" in a short report --
+    The report should focus on the answer to the query, should be well structured, informative, 
+    and comprehensive, with facts and numbers if available. Please keep the report concise and to the point.
+    You should strive to write the report as long as you can using all relevant and necessary information provided.
+
+    Please follow all of the following guidelines in your report:
+    - You MUST determine your own concrete and valid opinion based on the given information. Do NOT defer to general and meaningless conclusions.
+    - You MUST write the report with markdown syntax and {report_format} format.
+    - You MUST prioritize the relevance, reliability, and significance of the sources you use. Choose trusted sources over less reliable ones.
+    - You must also prioritize new articles over older articles if the source can be trusted.
+    - Use in-text citation references in {report_format} format and make it with markdown hyperlink placed at the end of the sentence or paragraph that references them like this: ([in-text citation](url)).
+    - Don't forget to add a reference list at the end of the report in {report_format} format and full url links without hyperlinks.
+    - {reference_prompt}
+    - {tone_prompt}
+
+    Please do your best, this is very important to my career.
+    Assume that the current date is {date.today()}.
+
+    When answering, please use the language in which the original question is written.
+    """
+
+
+def generate_very_short_report_prompt(
+        question: str,
+        context,
+        report_source: str,
+        report_format="apa",
+        total_words=1000,
+        tone=None,
+):
+    """Generates the report prompt for the given question and research summary.
+    Args: question (str): The question to generate the report prompt for
+            research_summary (str): The research summary to generate the report prompt for
+    Returns: str: The report prompt for the given question and research summary
+    """
+    tone_prompt = f"Write the answer in a {tone.value} tone." if tone else ""
+
+    return f"""
+Information: "{context}"
+---
+Using the above information, answer the following query or task: "{question}" you should answer the query; 
+you answer should be comprehensive, with facts and numbers if available. 
+Please keep the answer concise and to the point (no need to write introduction, body and the conclusion if the 
+question can be answered with the few sentences).
+
+Please follow all of the following guidelines in your report:
+- You MUST determine your own concrete and valid opinion based on the given information. Do NOT defer to general and meaningless conclusions.
+- You MUST write the answer with markdown syntax and {report_format} format.
+- You MUST prioritize the relevance, reliability, and significance of the sources you use. Choose trusted sources over less reliable ones.
+- You must also prioritize new articles over older articles if the source can be trusted.
+- Use in-text citation references in {report_format} format and make it with markdown hyperlink placed at the end of the sentence or paragraph that references them like this: ([in-text citation](url)).
+- {tone_prompt}
+
+Please do your best, this is very important to my career.
+Assume that the current date is {date.today()}.
+
+When answering, please use the language in which the original question is written.
+"""
 
 
 report_type_mapping = {
@@ -385,6 +469,8 @@ report_type_mapping = {
     ReportType.OutlineReport.value: generate_outline_report_prompt,
     ReportType.CustomReport.value: generate_custom_report_prompt,
     ReportType.SubtopicReport.value: generate_subtopic_report_prompt,
+    ReportType.ShortReport.value: generate_short_report_prompt,
+    ReportType.VeryShortReport.value: generate_very_short_report_prompt
 }
 
 

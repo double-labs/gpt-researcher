@@ -205,10 +205,18 @@ class ResearchConductor:
                 self.researcher.websocket,
             )
 
+        results_summary = ""
         if not scraped_data:
-            scraped_data = await self.__scrape_data_by_query(sub_query)
+            scraped_data, results_summary = await self.__scrape_data_by_query(sub_query)
 
         content = await self.researcher.context_manager.get_similar_content_by_query(sub_query, scraped_data)
+
+        if len(results_summary) > 0:
+            results_summary = "\n\n".join(
+                f"Search engine: {search_engine}\n{res}" for search_engine, res in results_summary)
+
+            results_summary = f"Here are the search results for the query \"{sub_query}\" ordered according to our search engine:\n\n{results_summary}"
+            content = f"{results_summary}\n\n\nHere is the relevant information found on those pages:\n\n{content}"
 
         if content and self.researcher.verbose:
             await stream_output(
@@ -257,6 +265,7 @@ class ResearchConductor:
             list: A list of scraped content results.
         """
         new_search_urls = []
+        total_search_results = []
 
         # Iterate through all retrievers
         for retriever_class in self.researcher.retrievers:
@@ -267,6 +276,13 @@ class ResearchConductor:
             search_results = await asyncio.to_thread(
                 retriever.search, max_results=self.researcher.cfg.max_search_results_per_query
             )
+
+            search_results_formatted = [
+                f"url:{res.get('href')}\ntitle:{res.get('title')}"
+                for res in search_results
+            ]
+            retriever_class_name = retriever_class.__name__
+            total_search_results.append((retriever_class_name, "\n\n".join(search_results_formatted)))
 
             # Collect new URLs from search results
             search_urls = [url.get("href") for url in search_results]
@@ -290,7 +306,7 @@ class ResearchConductor:
             scrape_urls, new_search_urls, self.researcher.cfg
         )
 
-        return scraped_content_results
+        return scraped_content_results, total_search_results
 
     async def __get_sub_queries(self, query):
         # Generate Sub-Queries including original query

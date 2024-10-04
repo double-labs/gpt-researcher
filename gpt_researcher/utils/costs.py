@@ -19,6 +19,8 @@ def estimate_llm_cost(input_content: str, output_content: str) -> float:
 
 
 def estimate_embedding_cost(model, docs):
+    if model == 'text-embedding-3-small-1':
+        model = 'text-embedding-3-small'
     encoding = tiktoken.encoding_for_model(model)
     total_tokens = sum(len(encoding.encode(str(doc))) for doc in docs)
     return total_tokens * EMBEDDING_COST

@@ -1,7 +1,7 @@
-from langchain_community.vectorstores import FAISS
 import os
+from gpt_researcher.utils import get_deployment_and_api_key_openai
 
-OPENAI_EMBEDDING_MODEL = os.environ.get("OPENAI_EMBEDDING_MODEL","text-embedding-3-small")
+OPENAI_EMBEDDING_MODEL = os.environ.get("OPENAI_EMBEDDING_MODEL","text-embedding-3-small-1")
 
 
 class Memory:
@@ -30,12 +30,17 @@ class Memory:
                     check_embedding_ctx_length=False,
                 )  # quick fix for lmstudio
             case "openai":
-                from langchain_openai import OpenAIEmbeddings
+                from langchain_openai import AzureOpenAIEmbeddings
 
-                _embeddings = OpenAIEmbeddings(
-                    openai_api_key=headers.get("openai_api_key")
-                    or os.environ.get("OPENAI_API_KEY"),
-                    model=OPENAI_EMBEDDING_MODEL
+                model_name = OPENAI_EMBEDDING_MODEL
+
+                azure_endpoint, api_key = get_deployment_and_api_key_openai(model_name)
+
+                _embeddings = AzureOpenAIEmbeddings(
+                    azure_endpoint=azure_endpoint,
+                    api_key=api_key,
+                    model=model_name,
+                    api_version=os.environ["AZURE_OPENAI_API_VERSION"]
                 )
             case "azure_openai":
                 from langchain_openai import AzureOpenAIEmbeddings

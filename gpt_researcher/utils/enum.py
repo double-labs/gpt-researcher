@@ -8,6 +8,8 @@ class ReportType(Enum):
     CustomReport = "custom_report"
     DetailedReport = "detailed_report"
     SubtopicReport = "subtopic_report"
+    ShortReport = "short_report"
+    VeryShortReport = "very_short_report"
 
 
 class ReportSource(Enum):

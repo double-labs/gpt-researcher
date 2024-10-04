@@ -50,7 +50,9 @@ report_type_descriptions = {
     ReportType.ResourceReport.value: "",
     ReportType.OutlineReport.value: "",
     ReportType.CustomReport.value: "",
-    ReportType.SubtopicReport.value: ""
+    ReportType.SubtopicReport.value: "",
+    ReportType.ShortReport.value: "",
+    ReportType.VeryShortReport.value: ""
 }
 
 cli.add_argument(
@@ -69,7 +71,7 @@ cli.add_argument(
 
 
 async def main(args):
-    """ 
+    """
     Conduct research on the given query, generate the report, and write
     it as a markdown file to the output directory.
     """
@@ -84,7 +86,9 @@ async def main(args):
     else:
         researcher = GPTResearcher(
             query=args.query,
-            report_type=args.report_type)
+            report_type=args.report_type,
+            verbose=False
+        )
 
         await researcher.conduct_research()
 

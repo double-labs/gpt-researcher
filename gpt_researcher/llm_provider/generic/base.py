@@ -2,6 +2,7 @@ import importlib
 from typing import Any
 from colorama import Fore, Style, init
 import os
+from gpt_researcher.utils import get_deployment_and_api_key_openai
 
 class GenericLLMProvider:
 
@@ -12,9 +13,18 @@ class GenericLLMProvider:
     def from_provider(cls, provider: str, **kwargs: Any):
         if provider == "openai":
             _check_pkg("langchain_openai")
-            from langchain_openai import ChatOpenAI
+            from langchain_openai import AzureChatOpenAI
 
-            llm = ChatOpenAI(**kwargs)
+            model_name = kwargs["model"]
+
+            azure_endpoint, api_key = get_deployment_and_api_key_openai(model_name)
+
+            llm = AzureChatOpenAI(
+                azure_endpoint=azure_endpoint,
+                api_key=api_key,
+                model=model_name,
+                api_version=os.environ["AZURE_OPENAI_API_VERSION"]
+            )
         elif provider == "anthropic":
             _check_pkg("langchain_anthropic")
             from langchain_anthropic import ChatAnthropic

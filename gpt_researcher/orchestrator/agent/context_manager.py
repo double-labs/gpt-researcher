@@ -128,10 +128,16 @@ class ContextManager:
                 self.researcher.websocket,
             )
 
+        results_summary = ""
         if not scraped_data:
-            scraped_data = await self.researcher.scraper.scrape_data_by_query(sub_query)
+            scraped_data, results_summary = await self.researcher.scraper.scrape_data_by_query(sub_query)
 
         content = await self.get_similar_content_by_query(sub_query, scraped_data)
+
+        if len(results_summary) > 0:
+            results_summary = "\n\n".join(f"Search engine: {search_engine}\n{res}" for search_engine, res in results_summary)
+            results_summary = f"Here are the search results for the query \"{sub_query}\" ordered according to our search engine:\n\n{results_summary}"
+            content = f"{results_summary}\n\n\nHere is the relevant information found on those pages:\n\n{content}"
 
         if content and self.researcher.verbose:
             await stream_output(

@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 import json
+import os
 import logging
+import random
 from typing import Optional, Any, Dict
 
 from colorama import Fore, Style
@@ -17,6 +19,23 @@ from .validators import Subtopics
 def get_llm(llm_provider, **kwargs):
     from gpt_researcher.llm_provider import GenericLLMProvider
     return GenericLLMProvider.from_provider(llm_provider, **kwargs)
+
+
+def get_deployment_and_api_key_openai(model_name: str) -> tuple:
+    data = json.loads(os.environ["AZURE_OPENAI_MODELS_JSON"])
+    data = [x for x in data if x["backend_group_name"] == model_name]
+    assert len(data) == 1, f"Model {model_name} not found in data"
+
+    data = data[0]["backend_urls"]
+
+    # take random deployed model
+    random.shuffle(data)
+    data = data[0]
+
+    key = data["key"]
+    url = data["url"]
+
+    return url, key
 
 
 async def create_chat_completion(
