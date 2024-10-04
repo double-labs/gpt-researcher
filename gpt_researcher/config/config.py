@@ -1,7 +1,7 @@
 import json
 import os
 from typing import Dict, Any, List
-from gpt_researcher.config.configurations.default_config import DEFAULT_CONFIG
+from .configurations.default_config import DEFAULT_CONFIG
 
 
 class Config:
